@@ -1,4 +1,4 @@
-# Understanding My Spending Behavior - DSA210 Term Project
+# The Impact of Screen Time on Financial Decisions - DSA210 Term Project
 
 ## Overview
 

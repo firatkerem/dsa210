@@ -163,18 +163,6 @@ This time series plot illustrates the daily variation in total screen time (oran
 
 This time series graph compares daily usage duration of TikTok, Snapchat, and Instagram with overall daily spending. While TikTok and Snapchat exhibit consistently high usage, there is no strong alignment with spending spikes. Notably, even on days with peak spending (early March), app usage does not drastically change, suggesting spending may not be directly triggered by time spent on these platforms.
 
-### Top 10 Most Used Applications by Screen Time
-
-![Top 10 Most Used Applications by Screen Time](./analysis_output/top10_apps.png)
-
-This horizontal bar chart ranks the ten most-used applications based on total screen time. TikTok and Snapchat dominate usage, each exceeding 4,000 minutes, followed by Instagram and WhatsApp. The remaining apps show considerably lower usage, indicating that a small number of platforms account for the majority of daily screen time.
-
-### Daily and Weekly Screen Time Distributions
-
-![Daily and Weekly Screen Time Distributions](./analysis_output/screen_time_distribution.png)
-
-The top histogram shows the distribution of total daily screen time, with most days falling between 300 and 400 minutes. The bottom violin plot displays screen time distribution across weekdays, revealing a generally consistent pattern, though Thursdays show a slightly wider spread. Overall, screen time appears relatively stable throughout the week with no extreme outliers tied to specific days.
-
 ---
 
 

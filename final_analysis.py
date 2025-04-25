@@ -149,70 +149,6 @@ def extra_visuals(df: pd.DataFrame):
     plt.close()
 
 # App-based visuals
-def app_usage_visuals():
-    """
-    Analyzes and visualizes application/category-based usage durations
-    from screentime.csv.
-    """
-
-    screen_fp = Path('data/screentime.csv')
-    if not screen_fp.exists():
-        print("screentime.csv not found, skipping app-based visualizations.")
-        return
-
-    sc_df = pd.read_csv(screen_fp, sep=';')
-
-    sc_df['Date'] = pd.to_datetime(sc_df['Date'], format='%d.%m.%Y')
-    sc_df['Time'] = pd.to_numeric(sc_df['Time'], errors='coerce')
-
-    app_total = (sc_df.groupby('Application_Name')['Time']
-                 .sum()
-                 .sort_values(ascending=False)
-                 .head(10))
-
-    plt.figure(figsize=(10, 5))
-    sns.barplot(x=app_total.values, y=app_total.index, color='skyblue')
-    plt.ylabel('')
-    plt.title('Top 10 Most Used Applications')
-    plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'top10_apps.png')
-    plt.close()
-
-    if 'Category' in sc_df.columns:
-        cat_total = (sc_df.groupby('Category')['Time']
-                     .sum()
-                     .sort_values(ascending=False))
-
-        plt.figure(figsize=(6, 6))
-        plt.pie(cat_total.values,
-                labels=cat_total.index,
-                autopct='%1.1f%%',
-                startangle=140)
-        plt.title('Total Usage Share by Category')
-        plt.tight_layout()
-        plt.savefig(OUTPUT_DIR / 'category_pie.png')
-        plt.close()
-
-    top3_apps = app_total.index[:3]
-    top3_df   = (sc_df[sc_df['Application_Name'].isin(top3_apps)]
-                 .groupby(['Date', 'Application_Name'])['Time']
-                 .sum()
-                 .reset_index())
-
-    plt.figure(figsize=(12, 6))
-    for app in top3_apps:
-        subset = top3_df[top3_df['Application_Name'] == app]
-        plt.plot(subset['Date'], subset['Time'], marker='o', label=app)
-
-    plt.legend()
-    plt.xlabel('Date')
-    plt.ylabel('Daily Usage Time (min)')
-    plt.title('Daily Usage Trends of Top 3 Apps')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.close()
-
-
 def simple_regression(df: pd.DataFrame):
     print("\n▶ Simple Linear Regression (Screen Time → Spending)")
     
@@ -391,7 +327,7 @@ def additional_tables():
                    .rename(columns={'Date':'Anomaly_Date',
                                     'Total_Spending':'Spending_TL',
                                     'TotalScreenTime':'ScreenTime_min'})
-    # ---------- Save Table 9 as PNG ----------
+
     if not anomalies.empty:
         fig9, ax9 = plt.subplots(figsize=(len(anomalies.columns)*2.5,
                                           max(1, len(anomalies))*0.5 + 1))
@@ -436,7 +372,6 @@ def main():
     descriptive_stats(data)
     correlation_and_tests(data)
     extra_visuals(data)         
-    app_usage_visuals()         
     simple_regression(data)
     top3_apps_vs_spending()
     app_spending_correlation(top_n=10)     

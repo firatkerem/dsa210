@@ -1,0 +1,27 @@
+{
+  "trained_at": "2025-05-22T16:13:33",
+  "best_model": "GradientBoost",
+  "r2": -0.1435808600849071,
+  "rmse": 12629.390284604962,
+  "feature_columns": {
+    "categorical": [
+      "day_of_week",
+      "is_weekend"
+    ],
+    "numerical": [
+      "total_minutes",
+      "prev_minutes",
+      "minutes_trend",
+      "prev_spend",
+      "spend_trend",
+      "roll_corr"
+    ]
+  },
+  "input_files": {
+    "screen_csv": "data/screentime.csv",
+    "spend_csv": "data/spending.csv"
+  },
+  "model_path": "ml_analysis_output/best_screen_spend_model.pkl",
+  "shap_generated": false,
+  "version": "1.0.0"
+}

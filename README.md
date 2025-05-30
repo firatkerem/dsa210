@@ -165,12 +165,102 @@ This time series graph compares daily usage duration of TikTok, Snapchat, and In
 
 ---
 
+### Correlation Between Variables  
+
+![Correlation Matrix](ml_analysis_output/0_raw_inspection/corr_matrix.png)
+
+| Pair                              |  r  | Interpretation                              |
+|-----------------------------------|-----|---------------------------------------------|
+| `total_minutes` vs `daily_spend`  |-0.09| Very weak, negative                         |
+| `daily_spend` vs `spend_trend`    | 0.22| Weak, positive                              |
+| `prev_minutes` vs `minutes_trend` | 0.64| Strong, positive (sanity-check on feature)  |
+
+The low absolute values for **screen-time vs. spending ( r≈-0.09 )** suggest that—contrary to the alternative hypothesis—overall phone usage is not a strong linear driver of daily expenditure in this sample.
+
+---
+
+### Spending Patterns by Weekday  
+
+![Daily Spend by Weekday](ml_analysis_output/0_raw_inspection/box_dayofweek_spend.png)
+
+*  **Outliers dominate.** Most days cluster under TL5 000, but rare spikes on **Tuesdays, Wednesdays and Saturdays** reach TL40 000–45 000, heavily skewing the distribution.  
+*  Median spending is fairly flat across weekdays, so typical spending behaviour appears stable.
+
+---
+
+### Screen-Time vs. Daily Spend  
+
+![Screen-Time vs Daily Spend](ml_analysis_output/0_raw_inspection/scatter_minutes_spend.png)
+
+A fitted regression line (red) slopes slightly downward, echoing the weak negative correlation. The shading shows wide confidence bands, reinforcing that **screen minutes explain little of the variance** once a handful of extreme spending days are removed.
+
+---
+
+### Rolling Correlation (30-Day Window)  
+
+![30-Day Rolling Correlation](ml_analysis_output/1_time_series/rolling_corr_30d.png)
+
+The rolling Pearson *r* fluctuates between -0.20 and +0.05—never exceeds the ±0.3 “small effect” threshold—confirming **no consistent relationship over time**.
+
+---
+
+### Time-Series Overview  
+
+![Screen Minutes & Spend Time-Series](ml_analysis_output/1_time_series/timeseries_minutes_spend.png)
+
+*  **Blue line (minutes)** rises and falls smoothly.  
+*  **Orange line (spend)** is mostly low with three pronounced spikes.  
+The lack of synchronised peaks again hints that **large purchases are event-driven rather than time-on-phone–driven**.
+
+---
+
+### Machine-Learning Prediction Results  
+
+| Model            | R² |
+|------------------|----|
+| Random Forest    |-0.15|
+| Gradient Boost   |-0.14|
+
+![Model R² Scores](ml_analysis_output/2_modeling/model_r2_scores.png)
+
+*Negative R²* indicates both models perform worse than simply predicting the mean spend every day; the current feature set cannot generalise past noise and outliers.
+
+#### Feature Importance (Gradient Boost)  
+
+![Feature Importance](ml_analysis_output/2_modeling/best_model_feature_importance.png)
+
+`spend_trend`—a lagged spending signal—dominates. True behavioural drivers like `total_minutes` appear far less influential, supporting the statistical findings.
+
+#### Error Diagnostics  
+
+![Absolute Error by Weekday](ml_analysis_output/2_modeling/error_by_weekday.png)
+
+Prediction error balloons on **Saturdays** (outlier purchases) and mid-week, aligning with the extreme values seen earlier.
+
+![Residual Distribution](ml_analysis_output/2_modeling/residuals_hist.png)
+
+Residuals are highly right-skewed; models systematically **under-predict large spends**.
+
+---
+
+## Future Work  
+
+* **Outlier treatment** – model separately or with quantile-regression methods.  
+* **Granular app-level features** – e.g., minutes in food-delivery apps vs. social media.  
+* **Event markers** – salary dates, big sales, holidays, to capture deterministic spikes.  
+* **Longer time horizon** – more observations will stabilise correlations and allow richer models.
 
 # Hypothesis Test Results
 
 ### Null Hypothesis (H₀)
 ---
 There is no statistically significant relationship between screen-time (or app-usage duration) and spending behaviour. Daily spending is completely random and unaffected by how long, or on which apps, I use my phone.
+
+| Hypothesis                                             | Outcome |
+|--------------------------------------------------------|---------|
+| H₀: “Screen time does **not** affect spending.”        | **Fail to reject.**  |
+| H₀: “Specific weekdays drive higher spending.”         | **Partially reject** (outliers inflate Tuesdays/Wednesdays/Saturdays, but medians similar). |
+| H₀: “Recent spend patterns help predict future spend.” | **Reject.** `spend_trend` emerges as the single most informative feature. |
 
 ### Alternative Hypothesis (H₁)
 ---
@@ -180,29 +270,23 @@ There is a statistically significant relationship between screen-time and spendi
 ---
 # Conclusion
 
-### 1. Screen-Time vs. Spending
+1. **Total screen-time is not a meaningful driver of daily spending.**  
+   - Correlation and regression tests yield non-significant p-values (> 0.05) and near-zero effect sizes.  
+   - The fitted slope (≈ -8 TL per extra minute) is negative but trivial and statistically unreliable, so the **null hypothesis is retained** for the overall screen-time question.
 
-- Result
-— Null hypothesis retained.
--	Correlation and regression tests all yield non-significant p-values ( >* 0.05 ) and near-zero effect sizes.
--	The regression slope ( -8 TL per extra minute ) is negative but trivial and statistically unreliable.
--	Therefore, total daily screen-time does not appear to drive overall spending.
+2. **A handful of apps show modest, app-specific effects — but evidence is tentative.**  
+   - Exploratory correlations hint at a positive link for shopping / social platforms such as Trendyol (r ≈ 0.35) and Snapchat (r ≈ 0.25).  
+   - Most other apps exhibit weak or negative associations, and formal significance tests at the app level are still pending, so the **alternative hypothesis is only partially supported**.
 
- ---
- 
+3. **Rare, high-value transactions dominate the variance.**  
+   - A few spikes (TL40 000–45 000) on isolated days swamp the day-to-day signal, masking any subtle behavioural effects of phone usage.
 
-### 2. App-Specific Effects
+4. **Lagged spend features outperform behavioural metrics.**  
+   - Simple variables like `spend_trend` and `prev_spend` carry more predictive power than any screen-time measure, suggesting habitual or planned expenses are stronger signals.
 
--	Result: Alternative hypothesis partially supported.
--	Exploratory correlations show a modest positive link between spending and a few apps (e.g., Trendyol r ≈ 0.35, Snapchat r ≈ 0.25).
--	Most apps exhibit weak or negative associations, and formal app-level significance tests have not yet been performed.
--	Consequently, some individual apps may influence spending, but current evidence is tentative.
- 
----
-
-# Overall Assessment
-
-The analyses indicate that general screen-time is largely independent of daily expenditures, upholding the null hypothesis for the primary question. In contrast, the alternative hypothesis receives limited support at the app level: certain high-impact platforms show preliminary signs of driving higher spending, whereas the majority do not. Robust app-specific tests and a larger dataset will be required to confirm these early signals.
+5. **Current ML models struggle with the heavy-tailed distribution.**  
+   - Both Random-Forest and Gradient-Boost baselines produce negative R² scores, under-predicting the extreme outliers.  
+   - Additional context (e-commerce app opens, salary days, promotional e-mails) or a larger sample will be required to capture these deterministic spikes.
 
 ---
 
